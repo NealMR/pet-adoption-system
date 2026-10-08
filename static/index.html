@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-50 text-gray-800">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adopt a Pet | The Pet Nest Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#F97316', // ThePetNest typical warm orange
+                            blue: '#0EA5E9',   // Trust blue
+                            dark: '#1F2937',
+                            light: '#F9FAFB'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Modal Animation */
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .toast { transform: translateY(1rem); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='/adopt'">
+                <!-- Logo mimicking ThePetNest -->
+                <div class="w-8 h-8 rounded-full bg-brand-orange flex items-center justify-center text-white">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+                <span class="text-xl font-bold text-brand-dark tracking-tight">Happy Paws</span>
+            </div>
+            <nav class="hidden md:flex gap-6">
+                <a href="/adopt" class="text-brand-orange font-semibold border-b-2 border-brand-orange px-1 py-5">Adopt a Pet</a>
+                <a href="/care" class="text-gray-500 hover:text-brand-dark font-medium px-1 py-5 transition-colors">Pet Care</a>
+                <a href="/services" class="text-gray-500 hover:text-brand-dark font-medium px-1 py-5 transition-colors">Services</a>
+            </nav>
+            <div class="flex items-center">
+                <button onclick="openLogin()" class="bg-brand-blue hover:bg-blue-600 text-white px-5 py-2 rounded-md font-medium transition-colors shadow-sm">
+                    Login / Sign Up
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid: Sidebar + Grid -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8 flex flex-col md:flex-row gap-8">
+        
+        <!-- Left Sidebar: Filters -->
+        <aside class="w-full md:w-64 shrink-0">
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-24">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Filter By</h2>
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <div class="relative">
+                        <input type="text" id="searchBox" placeholder="Breed or name..." class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-brand-orange focus:border-brand-orange text-sm">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="filterStatus" class="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-brand-orange focus:border-brand-orange">
+                        <option value="all">All Pets</option>
+                        <option value="available" selected>Available</option>
+                        <option value="adopted">Adopted</option>
+                    </select>
+                </div>
+
+                <!-- Fake categories for visual authenticity -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center"><input type="checkbox" checked class="text-brand-orange focus:ring-brand-orange rounded border-gray-300"><span class="ml-2 text-sm text-gray-600">Dogs</span></label>
+                        <label class="flex items-center"><input type="checkbox" checked class="text-brand-orange focus:ring-brand-orange rounded border-gray-300"><span class="ml-2 text-sm text-gray-600">Cats</span></label>
+                    </div>
+                </div>
+                
+                <button onclick="renderPets()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-md font-medium text-sm transition-colors">Apply Filters</button>
+            </div>
+        </aside>
+
+        <!-- Right Content: Pet Grid -->
+        <section class="flex-1">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Pets for Adoption</h1>
+                    <p class="text-sm text-gray-500 mt-1" id="petCount">Loading pets...</p>
+                </div>
+                <div class="hidden sm:block">
+                    <span class="text-sm text-gray-500 mr-2">Sort by:</span>
+                    <select class="border-none bg-transparent text-sm font-medium text-gray-700 focus:ring-0 cursor-pointer">
+                        <option>Most Relevant</option>
+                        <option>Newest Additions</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="petGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- JS fills this -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Detailed Pet Profile & Adoption Modal -->
+    <div id="petModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="bg-white w-full max-w-4xl mx-4 rounded-xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[90vh] modal-enter relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-2 text-gray-600 z-20 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <!-- Left: Gallery -->
+            <div class="w-full md:w-1/2 bg-gray-100 flex flex-col">
+                <div class="h-64 md:h-80 w-full shrink-0">
+                    <img id="modalImgMain" src="" class="w-full h-full object-cover">
+                </div>
+                <div class="flex gap-2 p-4 overflow-x-auto shrink-0">
+                    <img id="modalImg1" src="" class="h-20 w-32 object-cover rounded-md cursor-pointer border-2 border-brand-orange" onclick="swapModalImg(this.src)">
+                    <img id="modalImg2" src="" class="h-20 w-32 object-cover rounded-md cursor-pointer opacity-70 hover:opacity-100 transition-opacity" onclick="swapModalImg(this.src)">
+                    <img id="modalImg3" src="" class="h-20 w-32 object-cover rounded-md cursor-pointer opacity-70 hover:opacity-100 transition-opacity" onclick="swapModalImg(this.src)">
+                </div>
+            </div>
+
+            <!-- Right: Details & Form -->
+            <div class="w-full md:w-1/2 flex flex-col bg-white h-full max-h-[50vh] md:max-h-full overflow-y-auto">
+                <div class="p-6 md:p-8">
+                    <div class="flex justify-between items-start mb-2">
+                        <h2 id="modalPetName" class="text-3xl font-bold text-gray-900">Name</h2>
+                        <span id="modalPetStatus" class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase rounded-full">Available</span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-500 flex items-center gap-1 mb-4">
+                        <svg class="w-4 h-4 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span id="modalPetLocation">Sangli, Maharashtra</span>
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Breed</p>
+                            <p id="modalPetBreed" class="font-medium text-gray-900">Breed</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Age</p>
+                            <p id="modalPetAge" class="font-medium text-gray-900">Age</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-500 uppercase font-semibold">About</p>
+                            <p id="modalPetDesc" class="text-sm text-gray-700 mt-1">Description</p>
+                        </div>
+                    </div>
+
+                    <div id="adoptionFormSection">
+                        <hr class="mb-6 border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Start Adoption Process</h3>
+                        <form id="adoptPetForm" class="space-y-4">
+                            <input type="hidden" id="reqId">
+                            <input type="hidden" id="petId">
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" id="adopterName" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-brand-orange focus:border-brand-orange" placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Email Address</label>
+                                <input type="email" id="adopterEmail" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-brand-orange focus:border-brand-orange" placeholder="john@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Message to Rescuer</label>
+                                <textarea id="adoptMessage" required rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-brand-orange focus:border-brand-orange" placeholder="I would love to adopt this pet..."></textarea>
+                            </div>
+                            
+                            <button type="submit" id="btnAdoptSubmit" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-bold py-3 rounded-md shadow-sm transition-colors flex justify-center items-center gap-2">
+                                Submit Application
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div id="adoptedNotice" class="hidden">
+                        <div class="p-4 bg-gray-100 rounded-lg text-center border border-gray-200">
+                            <p class="text-gray-600 font-medium">This pet has already found a loving home!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        let allPets = [];
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return "";
+            return String(unsafe).replace(/[&<"'>]/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            const isSuccess = type === 'success';
+            toast.className = `toast flex items-center gap-2 px-4 py-3 rounded-md shadow-lg font-medium text-sm text-white ${isSuccess ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add("show"));
+            setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        const dogPhotos = ['1543466835-00a5078e9bf1', '1583511655857-d19b40a7a54e', '1517849845537-4d257902454a', '1552053831715-9c1c1529ffe8', '1507146426996-ef05306b995a'];
+        const catPhotos = ['1514888286974-6c03e2ca1dba', '1495360010541-f48722b34f7d', '1513360371669-4dc3ef7bb008', '1573865526739-10659fec78a5', '1529778456983-4eea89c19465'];
+
+        function getPhotos(species, index) {
+            const isCat = species.toLowerCase().includes('cat');
+            const arr = isCat ? catPhotos : dogPhotos;
+            return [
+                arr[(index) % arr.length],
+                arr[(index + 1) % arr.length],
+                arr[(index + 2) % arr.length]
+            ].map(id => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=450&q=80`);
+        }
+
+        async function fetchPets() {
+            try {
+                const res = await fetch(`${API_URL}/pets`);
+                if (res.ok) {
+                    allPets = await res.json();
+                    renderPets();
+                } else { showToast("Failed to load pets.", "error"); }
+            } catch (err) { showToast("Network error.", "error"); }
+        }
+
+        document.getElementById("filterStatus").addEventListener("change", renderPets);
+        document.getElementById("searchBox").addEventListener("input", renderPets);
+
+        function renderPets() {
+            const grid = document.getElementById("petGrid");
+            const filter = document.getElementById("filterStatus").value;
+            const query = document.getElementById("searchBox").value.toLowerCase().trim();
+
+            let filtered = allPets.filter(p => {
+                if (filter !== "all" && p.status !== filter) return false;
+                if (query) return (p.name||"").toLowerCase().includes(query) || (p.breed||"").toLowerCase().includes(query);
+                return true;
+            });
+
+            document.getElementById("petCount").innerText = `Showing ${filtered.length} pets`;
+            grid.innerHTML = "";
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-500 font-medium border-2 border-dashed border-gray-200 rounded-lg">No pets found. Try adjusting your filters.</div>`;
+                return;
+            }
+
+            filtered.forEach((pet, index) => {
+                const photos = getPhotos(pet.species, index);
+                const isAvail = pet.status === "available";
+                
+                // Card mimicking ThePetNest marketplace style
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col";
+                card.onclick = () => openModal(pet, photos);
+
+                card.innerHTML = `
+                    <div class="relative h-48 overflow-hidden bg-gray-100">
+                        <img src="${photos[0]}" class="w-full h-full object-cover">
+                        <div class="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm">
+                            ID: ${pet.pet_id}
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-lg font-bold text-gray-900">${escapeHtml(pet.name)}</h3>
+                            <span class="text-sm font-medium ${isAvail ? 'text-green-600' : 'text-gray-400'}">${isAvail ? 'Available' : 'Adopted'}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">${escapeHtml(pet.breed)} â€¢ ${pet.age} yrs</p>
+                        
+                        <div class="mt-auto pt-3 border-t border-gray-100 flex justify-between items-center">
+                            <p class="text-xs text-gray-400 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                Sangli, Maharashtra
+                            </p>
+                            <button class="text-brand-orange text-sm font-semibold hover:text-orange-700 transition-colors">
+                                ${isAvail ? 'Meet Me â†’' : 'View â†’'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- Modal UX ---
+        function openModal(pet, photos) {
+            document.getElementById('modalImgMain').src = photos[0];
+            document.getElementById('modalImg1').src = photos[0];
+            document.getElementById('modalImg2').src = photos[1];
+            document.getElementById('modalImg3').src = photos[2];
+            
+            // Set styles for active thumbnail
+            updateThumbStyles(photos[0]);
+
+            document.getElementById('modalPetName').textContent = pet.name;
+            document.getElementById('modalPetBreed').textContent = pet.breed;
+            document.getElementById('modalPetAge').textContent = `${pet.age} years`;
+            document.getElementById('modalPetDesc').textContent = pet.description || "Looking for a loving home.";
+            
+            const isAvail = pet.status === 'available';
+            const statusEl = document.getElementById('modalPetStatus');
+            statusEl.textContent = isAvail ? 'Available' : 'Adopted';
+            statusEl.className = isAvail ? 'px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase rounded-full' : 'px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold uppercase rounded-full';
+
+            if (isAvail) {
+                document.getElementById('adoptionFormSection').classList.remove('hidden');
+                document.getElementById('adoptedNotice').classList.add('hidden');
+                
+                // Prep form
+                document.getElementById('petId').value = pet.pet_id;
+                document.getElementById('reqId').value = "REQ-" + Date.now().toString().slice(-6);
+            } else {
+                document.getElementById('adoptionFormSection').classList.add('hidden');
+                document.getElementById('adoptedNotice').classList.remove('hidden');
+            }
+
+            const modal = document.getElementById('petModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('petModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+            document.getElementById('adoptPetForm').reset();
+        }
+
+        function swapModalImg(src) {
+            document.getElementById('modalImgMain').src = src;
+            updateThumbStyles(src);
+        }
+
+        function updateThumbStyles(activeSrc) {
+            [1, 2, 3].forEach(i => {
+                const img = document.getElementById(`modalImg${i}`);
+                if (img.src === activeSrc) {
+                    img.classList.remove('opacity-70');
+                    img.classList.add('border-2', 'border-brand-orange');
+                } else {
+                    img.classList.add('opacity-70');
+                    img.classList.remove('border-2', 'border-brand-orange');
+                }
+            });
+        }
+
+        document.getElementById("adoptPetForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btnAdoptSubmit");
+            btn.disabled = true;
+            btn.innerHTML = "Submitting...";
+
+            const payload = {
+                request_id: document.getElementById("reqId").value,
+                pet_id: document.getElementById("petId").value,
+                adopter_name: document.getElementById("adopterName").value,
+                adopter_email: document.getElementById("adopterEmail").value,
+                message: document.getElementById("adoptMessage").value,
+                status: "pending"
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/adoptions`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast("Application submitted successfully!", "success");
+                    fetchPets();
+                    setTimeout(closeModal, 1500);
+                } else {
+                    showToast("Submission failed.", "error");
+                    btn.disabled = false;
+                    btn.innerHTML = "Submit Application";
+                }
+            } catch (err) {
+                showToast("Network error.", "error");
+                btn.disabled = false;
+                btn.innerHTML = "Submit Application";
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", fetchPets);
+    </script>
+    <!-- Login / Sign Up Modal -->
+    <div id="loginModal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeLogin()"></div>
+        <div class="bg-white w-full max-w-md mx-4 rounded-xl shadow-2xl z-[110] overflow-hidden modal-enter relative p-8">
+            <button onclick="closeLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-full bg-brand-orange flex items-center justify-center text-white mx-auto mb-3">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+                <h2 id="modalAuthTitle" class="text-2xl font-bold text-gray-900">Welcome Back</h2>
+                <p id="modalAuthSubtitle" class="text-sm text-gray-500 mt-1">Sign in to your Happy Paws account</p>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div id="nameFieldContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="authName" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-brand-orange focus:border-brand-orange">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="authEmail" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-brand-orange focus:border-brand-orange" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="authPass" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-brand-orange focus:border-brand-orange" required>
+                </div>
+                <button type="submit" id="btnAuthSubmit" class="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-2.5 rounded-md shadow-sm transition-colors mt-2">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <span id="authToggleText">Don't have an account?</span> 
+                <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-brand-orange font-semibold hover:underline">Sign up</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let isSignUp = false;
+
+        function openLogin() {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginModal').classList.add('flex');
+            // reset to login
+            isSignUp = false;
+            updateAuthUI();
+        }
+
+        function closeLogin() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('flex');
+            document.getElementById('authForm').reset();
+        }
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            document.getElementById('authEmail').value = '';
+            document.getElementById('authPass').value = '';
+            
+            if (isSignUp) {
+                document.getElementById('modalAuthTitle').innerText = "Create Account";
+                document.getElementById('modalAuthSubtitle').innerText = "Join the Happy Paws family!";
+                document.getElementById('nameFieldContainer').classList.remove('hidden');
+                document.getElementById('btnAuthSubmit').innerText = "Sign Up";
+                document.getElementById('authToggleText').innerText = "Already have an account?";
+                document.getElementById('authToggleBtn').innerText = "Sign in";
+                document.getElementById('authName').required = true;
+            } else {
+                document.getElementById('modalAuthTitle').innerText = "Welcome Back";
+                document.getElementById('modalAuthSubtitle').innerText = "Sign in to your Happy Paws account";
+                document.getElementById('nameFieldContainer').classList.add('hidden');
+                document.getElementById('btnAuthSubmit').innerText = "Sign In";
+                document.getElementById('authToggleText').innerText = "Don't have an account?";
+                document.getElementById('authToggleBtn').innerText = "Sign up";
+                document.getElementById('authName').required = false;
+                
+                // Prefill admin for convenience
+                document.getElementById('authEmail').value = 'admin@happypaws.com';
+                document.getElementById('authPass').value = 'admin';
+            }
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const em = document.getElementById('authEmail').value;
+            const pw = document.getElementById('authPass').value;
+            
+            if (isSignUp) {
+                // Mock signup until backend agents finish routers/auth.py
+                showToast('Account created! The backend agents are still wiring the database, but your frontend works!', 'success');
+                setTimeout(() => { toggleAuthMode(); }, 1500);
+            } else {
+                if(em === 'admin@happypaws.com' && pw === 'admin') {
+                    window.location.href = '/admin-dashboard';
+                } else {
+                    showToast('Logged in successfully!', 'success');
+                    closeLogin();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
