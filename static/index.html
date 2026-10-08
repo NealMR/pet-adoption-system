@@ -306,7 +306,7 @@
                             <h3 class="text-lg font-bold text-gray-900">${escapeHtml(pet.name)}</h3>
                             <span class="text-sm font-medium ${isAvail ? 'text-green-600' : 'text-gray-400'}">${isAvail ? 'Available' : 'Adopted'}</span>
                         </div>
-                        <p class="text-sm text-gray-500 mb-2">${escapeHtml(pet.breed)} â€¢ ${pet.age} yrs</p>
+                        <p class="text-sm text-gray-500 mb-2">${escapeHtml(pet.breed)} - ${pet.age} yrs</p>
                         
                         <div class="mt-auto pt-3 border-t border-gray-100 flex justify-between items-center">
                             <p class="text-xs text-gray-400 flex items-center gap-1">
@@ -314,7 +314,7 @@
                                 Sangli, Maharashtra
                             </p>
                             <button class="text-brand-orange text-sm font-semibold hover:text-orange-700 transition-colors">
-                                ${isAvail ? 'Meet Me â†’' : 'View â†’'}
+                                ${isAvail ? 'Meet Me ->' : 'View ->'}
                             </button>
                         </div>
                     </div>
