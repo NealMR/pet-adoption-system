@@ -133,8 +133,8 @@ def get_requests(db: Session = Depends(get_db)):
     return [r.to_dict() for r in requests]
 
 
-@router.get("/my-requests")
-@router.get("/my-requests/")
+@router.get("/my-requests", response_model=List[dict])
+@router.get("/my-requests/", response_model=List[dict])
 def get_my_requests(email: str, db: Session = Depends(get_db)):
     """
     Retrieve adoption requests by adopter email.
