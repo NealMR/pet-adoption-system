@@ -1,25 +1,71 @@
-# Python bytecode
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # Virtual environments
 venv/
 .venv/
 env/
+ENV/
+env.bak/
+venv.bak/
 
-# Testing artifacts
+# Unit test / coverage reports
 .pytest_cache/
 .coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 htmlcov/
+.tox/
+.nox/
 
-# IDEs
+# SQLite / Database runtime files
+*.db
+*.sqlite
+*.sqlite3
+
+
+# Environment variables & secrets
+.env
+.env.*
+*.local
+
+# IDEs and editors
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
 
-# OS files
+# Operating System files
 .DS_Store
 Thumbs.db
-
-# Environment variables
-.env
+ehthumbs.db
+[Bb]in/
+[Oo]bj/
